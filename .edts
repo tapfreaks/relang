@@ -1,0 +1,3 @@
+:name "relang"
+:node-sname "rel"
+:lib-dirs '("deps")

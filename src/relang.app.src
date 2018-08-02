@@ -1,0 +1,17 @@
+{application, relang,
+ [{description, "RethinkDB Erlang Implementation"},
+  {vsn, "0.0.2"},
+  {registered, []},
+  {mod, { relang_app, []}},
+  {applications,
+   [kernel,
+    stdlib,
+    sasl
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {maintainers, []},
+  {licenses, ["Apache 2.0"]},
+  {links, []}
+ ]}.
