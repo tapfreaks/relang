@@ -1,0 +1,4 @@
+sudo rm -rf deps/*/ebin
+sudo rebar3 clean
+sudo rebar3 compile
+sudo erl -pa deps/*/ebin -eval "application:start(sasl)" -eval "application:start(relang)" -eval "c:c('src/rtlang')"

@@ -1,0 +1,16 @@
+-Module(rtlang).
+
+-author(asif).
+-email("asif@tapfreaks.net").
+
+%%=====================================================
+%% An easy way of dogin some complex things
+%%=====================================================
+
+%% API
+
+connect (Host, Port) ->
+    ok.
+
+
+
