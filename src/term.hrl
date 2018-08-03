@@ -48,8 +48,8 @@
 
 -define(FILTER, 39).
 -define(DB_CREATE, 57).
--define(db_list, 59).
--define(table_list, 62).
+-define(DB_LIST, 59).
+-define(TABLE_LIST, 62).
 -define(TABLE_CREATE, 60).
 -define(TERMTYPE_TABLE_DROP, 61).
 
@@ -61,12 +61,12 @@
 -define(DIV, 27). %% NUMBER... 
 -define(MOD, 28). %% NUMBER, NUMBER -> NUMBER
 
--define(TERMTYPE_GET_FIELD  , 31). %% OBJECT, STRING -> DATUM
+-define(TERMTYPE_GET_FIELD, 31). %% OBJECT, STRING -> DATUM
                           %% | Sequence, STRING -> Sequence
                           %% Return an array containing the keys of the object.
--define(TERMTYPE_KEYS , 94). %% OBJECT -> ARRAY
+-define(TERMTYPE_KEYS, 94). %% OBJECT -> ARRAY
                     %% Creates an object
--define(TERMTYPE_OBJECT , 143). %% STRING, DATUM, ... -> OBJECT
+-define(TERMTYPE_OBJECT, 143). %% STRING, DATUM, ... -> OBJECT
                       %% Check whether an object contains all the specified fields,
                       %% or filters a sequence so that all objects inside of it
                       %% contain all the specified fields.

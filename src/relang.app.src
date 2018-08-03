@@ -9,7 +9,10 @@
     sasl
    ]},
   {env,[]},
-  {modules, []},
+  {modules, [
+    rtlang,
+    rtlang_query
+  ]},
 
   {maintainers, []},
   {licenses, ["Apache 2.0"]},

@@ -8,6 +8,7 @@
 %%=====================================================
 
 -export([connect/2, close/1, test/0]).
+-export([r/1, r/2]).
 -export([getField/1]).
 
 %%=====================================================
@@ -23,7 +24,6 @@ handshake(Sock, _AuthKey) ->
   {ok, Response} = read_until_null(Sock),
   case Response == <<"SUCCESS",0>> of
     true ->
-      io:format("~nResponse : ~s", [Response]),
       ok;
     false ->
       io:format("Error: ~s~n", [Response]),
@@ -67,10 +67,29 @@ connect (Host, Port) ->
 close(Sock) ->
   gen_tcp:close(Sock).
 
+%%% RethinkDB API
+r(Q) -> rtlang_query:query(Q).
+r(Socket, RawQuery) ->
+  rtlang_query:query(Socket, RawQuery).
 
 %%=====================================================
 %% ReQL Functions
 %%=====================================================
 
-getField (_Conn) ->
-    ok.
+getField (Conn) ->
+
+XFun = 
+[{db, [<<"ping">>]}, {table,
+[<<"employees">>]}, {filter, fun(X) ->
+  [
+    {'or', [
+      {eq, [{field, [X, <<"age">>]}, 34]},
+      {eq, [{field, [X, <<"age">>]}, 30]},
+      {'or', [
+           {eq, [{field, [X, <<"age">>]}, 32]}
+      ]}
+    ]}
+  ]
+end}],
+
+r(Conn, []).

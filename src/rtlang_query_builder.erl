@@ -1,17 +1,33 @@
--module(relang_ast).
+-module(rtlang_query_builder).
 
 -author(asif).
 -email("asif@tapfreaks.net").
+
+-include("ql2_pb.hrl").
 -include("term.hrl").
 
--compile(export_all). %% replace with -export() later, for God's sake!
+-export([make/1, build_argument/1, build/1, build/2]).
+-export([func_name/1, var/1]).
+-export([db_create/1, db/1, db/2, db_list/0, table_list/1, table_list/2]).
+-export([table/1, table/2, get/2, get_field/2, bracket/2, keys/1, object/1]).
+-export([table_create/1, table_create/2, table_drop/1, table_drop/2, insert/2, update/2, update/3]).
+-export([changes/2, filter/2, eq/2, gt/2, ge/2, lt/2, le/2, match/2, contains/2, field/2, nth/2]).
+-export(['and'/1, 'or'/1, now/0, expr/1, add/2, sub/2, mul/2, 'div'/2, mod/2, during/2, row/1, row/2]).
+-export([default/2, gen_var/1, count/1, inner_join/2, wrap_fun/2, zip/1, eq_join/3, eq_join/4]).
+-export([circle/2, distance/2, fill/1, point/2, polygon/1, line/1, make_array/1, to_rethinkdb_type/1]).
+-export([geojson/1, to_jsongeojson/0]).
+-export([expx/0]).
+
+%%=====================================================
+%% An easy way of dogin some complex things
+%%=====================================================
 
 make(Query) when is_tuple(Query)->
   build(Query);
 
 make([Query | Qs]) ->
   Parent = build(Query),
-%%  io:format("~n~nParent : ~p~n", [Parent]),
+  io:format("~nParent : ~p~n", [Parent]),
   Q = build(Qs, Parent),
   Q
   .
@@ -20,16 +36,12 @@ make([Query | Qs]) ->
 %  "";
 
 % Argument can be other ReQL
-
 build_argument(A) when is_tuple(A)->
-  A
-  ;
+  A;
 build_argument(A) when is_list(A)->
-  A
-  .
+  A.
 
 build(Query) when is_tuple(Query) ->
-  io:format("~nQuery Is Touple : ~p", [Query]),
   Params = case Query of
     {F} -> [];
     {F, A} when is_list(A)-> A;
@@ -50,8 +62,7 @@ build(Query) when is_tuple(Query) ->
     _ -> apply(?MODULE, F, Params)
   end;
 build(N) when is_number(N) ->
-  apply(?MODULE, var, [N])
-  .
+  apply(?MODULE, var, [N]).
 
 build([], Parent) ->
   Parent;
@@ -63,8 +74,8 @@ build([Query | Qs], Parent) when is_tuple(Query)->
     {Func, Arguments, Options} when not is_list(Arguments)-> apply(?MODULE, Func, [Parent] ++ [Arguments] ++ [Options]);
     {Func, Arguments, Options} when is_list(Arguments)-> apply(?MODULE, Func, [Parent] ++ Arguments ++ [Options])
   end,
-  build(Qs, T)
-  .
+  io:format("Operartion : ~p~n", [Query]),
+  build(Qs, T).
 
 % We have some function name we
 func_name(F) ->
@@ -253,6 +264,14 @@ eq(Field, Value) ->
 gt(Field, Value) ->
   [
    ?GT,
+   [make(Field), Value]
+   %[]
+  ]
+  .
+
+ge(Field, Value) ->
+  [
+   ?GE,
    [make(Field), Value]
    %[]
   ]
@@ -516,3 +535,8 @@ to_jsongeojson() ->
   [?TERMTYPE_TO_GEOJSON,
     []
   ].
+
+%% Additional Functions
+
+expx() ->
+    [<<"foo">>].
