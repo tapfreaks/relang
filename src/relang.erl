@@ -154,6 +154,66 @@ query(Socket, RawQuery, Option) ->
   .
 %%%
 
+
+
+queryTest(Socket, CompileQuery) ->
+  {A1, A2, A3} = erlang:timestamp(),
+  TString = lists:flatten(io_lib:format("~p", [A1+A2+A3])),
+  Token = rand:uniform(list_to_integer(TString)),
+  io:format("QueryToken = ~p~n", [Token]),
+%%  Query = [1,[39,[[15,[[14,[<<"ping_db">>]],<<"employees">>]],[69,[[2,[0]],[93,[[2,[22,45]],[170,[[10,[0]],<<"age">>]]]]]]]]],
+
+%%  Query = relang_ast:make([1,[39,[[15,[[14,[<<"ping_db">>]],<<"employees">>]],[69,[[2,[0]],[93,[[2,[22,45]],[170,[[10,[0]],<<"age">>]]]]]]]]]),
+
+  io:format("Query = ~p ~n", [CompileQuery]),
+%%  io:format("OPTION = ~p ~n", [Option]),
+%%  Iolist  = jsx:encode([?QUERYTYPE_START, Query, Option]), % ["[1,"] ++ [Query] ++ [",{}]"], % list db
+  Iolist  = jsx:encode(CompileQuery), % ["[1,"] ++ [Query] ++ [",{}]"], % list db
+  Length = iolist_size(Iolist),
+  %io:format("Query= ~p~n", [Iolist]),
+  %io:format("Length: ~p ~n", [Length]),
+
+  case gen_tcp:send(Socket, [<<Token:64/little-unsigned>>, <<Length:32/little-unsigned>>, Iolist]) of
+    ok ->
+      ok;
+    {error, Reason} ->
+      io:fwrite("Got Error when sending query: ~s ~n", [Reason])
+%%      {error, Reason}
+  end,
+
+  case recv(Socket) of
+    {ok, R} ->
+      io:format("Ok "),
+      io:format(R),
+      Rterm = jsx:decode(R),
+      io:format("Recived Response Form TCP DB ~p ~n",[Rterm]),
+      %proplists:get_value(<<"r">>, Rterm),
+      case proplists:get_value(<<"t">>, Rterm) of
+        ?RUNTIME_ERROR ->
+          io:format("Error"),
+          {error, proplists:get_value(<<"r">>, Rterm)};
+        ?SUCCESS_ATOM ->
+          io:format("response: a single atom"),
+          {ok, proplists:get_value(<<"r">>, Rterm)};
+        ?SUCCESS_SEQUENCE ->
+          io:format("response: a sequence"),
+          {ok, proplists:get_value(<<"r">>, Rterm)};
+        ?SUCCESS_PARTIAL ->
+          % So we get back a stream, let continous pull query
+          io:format("response: partial. Can use next here"),
+          {cursor, {Socket, Token, proplists:get_value(<<"r">>, Rterm)}}
+        %Recv = spawn(?MODULE, stream_recv, [Socket, Token]),
+        %Pid = spawn(?MODULE, stream_poll, [{Socket, Token}, Recv]),
+        %{ok, {pid, Pid}, proplists:get_value(<<"r">>, Rterm)}
+      end
+    ;
+    {error, ErrReason} ->
+      io:fwrite("Got Error when receving: ~s ~n", [ErrReason]),
+      {error, ErrReason}
+  end
+.
+
+
 stream_stop(Socket, Token) ->
   Iolist = ["[3]"],
   Length = iolist_size(Iolist),
